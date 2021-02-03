@@ -9,10 +9,12 @@ import {
 } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 
+
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [numberOfDetected, setNumberOfDetected] = useState(0)
   const scannedRef = useRef(scanned);
   scannedRef.current = scanned;
 
@@ -24,12 +26,13 @@ export default function App() {
   }, []);
 
   const handleBarCodeScanned = ({ type, data, bounds, cornerPoints }) => {
-    // console.log(bounds)
-    // console.log(cornerPoints)
+    // setScanned(true);
+    // setIsScanning(false);
 
-    setScanned(true);
-    setIsScanning(false);
-    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    // alert removed, to not press ok each time
+    // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    console.log(`type: ${type}, data: ${data}`)
+    setNumberOfDetected(number => number + 1)
   };
 
   if (hasPermission === null) {
@@ -39,23 +42,15 @@ export default function App() {
     return <Text>No access to camera</Text>;
   }
 
-  const scanTwoSeconds = () => {
+  const scan = () => {
     setIsScanning(true);
-    setScanned(false);
-    setTimeout(() => {
-      setIsScanning(false);
-      if (!scannedRef.current) {
-        Alert.alert("QR code was not found");
-      }
-    }, 2000);
+    // setScanned(false);
   };
 
   return (
     <View style={styles.container}>
       <BarCodeScanner
-        onBarCodeScanned={
-          scanned ? undefined : isScanning ? handleBarCodeScanned : undefined
-        }
+        onBarCodeScanned={handleBarCodeScanned}
         style={StyleSheet.absoluteFillObject}
       >
         <Background />
@@ -63,14 +58,17 @@ export default function App() {
       <View style={styles.buttonsContainer}>
         {!isScanning && (
           <Button
-            title="Tap to start 2 sec scanning"
-            onPress={scanTwoSeconds}
+            title="Start infinite scanning"
+            onPress={scan}
           />
         )}
         {isScanning && (
           <Text style={{ color: "white", fontSize: 16, textAlign: "center" }}>
             Scanning...
           </Text>
+        )}
+        {isScanning && (
+          <Text style={{ color: "white", fontSize: 16, textAlign: "center" }}>{`Number of detected QR's: ${numberOfDetected}`}</Text>
         )}
       </View>
     </View>
